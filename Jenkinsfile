@@ -155,23 +155,25 @@ pipeline {
         // STAGE 6: RELEASE - PRODUCTION
         // ─────────────────────────────────────────
         stage('Release - Production') {
-            steps {
-                echo "============================================"
-                echo "STAGE 6: RELEASE - PRODUCTION"
-                echo "Promoting application to production..."
-                echo "============================================"
-                bat "docker-compose -f docker-compose.prod.yml down --remove-orphans || true"
-                bat "docker-compose -f docker-compose.prod.yml up -d"
-                echo "Waiting for production to start..."
-                bat "ping -n 10 127.0.0.1 > nul"
-                bat "curl -f http://localhost:5001/health"
-                echo "Production release v%IMAGE_TAG% successful"
-            }
-            post {
-                success { echo "✅ PRODUCTION RELEASE PASSED" }
-                failure { echo "❌ PRODUCTION RELEASE FAILED" }
-            }
-        }
+    steps {
+        echo "============================================"
+        echo "STAGE 6: RELEASE - PRODUCTION"
+        echo "Promoting application to production..."
+        echo "============================================"
+        bat "docker ps -q --filter publish=5002 > temp.txt && set /p CID=<temp.txt && docker rm -f %CID% || true"
+        bat "docker-compose -f docker-compose.prod.yml down --remove-orphans || true"
+        bat "ping -n 5 127.0.0.1 > nul"
+        bat "docker-compose -f docker-compose.prod.yml up -d"
+        echo "Waiting for production to start..."
+        bat "ping -n 20 127.0.0.1 > nul"
+        bat "curl -f http://localhost:5002/health"
+        echo "Production release successful"
+    }
+    post {
+        success { echo "✅ PRODUCTION RELEASE PASSED" }
+        failure { echo "❌ PRODUCTION RELEASE FAILED" }
+    }
+}
 
         // ─────────────────────────────────────────
         // STAGE 7: MONITORING
