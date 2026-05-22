@@ -47,27 +47,25 @@ pipeline {
         }
 
         stage('Code Quality') {
-            steps {
-                echo "Running SonarQube analysis..."
-                withSonarQubeEnv('SonarQube') {
-                    bat """
-                        sonar-scanner ^
-                          -Dsonar.projectKey=flask-taskmanager ^
-                          -Dsonar.sources=app ^
-                          -Dsonar.tests=tests ^
-                          -Dsonar.python.coverage.reportPaths=coverage.xml ^
-                          -Dsonar.projectVersion=%IMAGE_TAG%
-                    """
-                }
-                timeout(time: 3, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
-                }
-            }
-            post {
-                success { echo "CODE QUALITY PASSED" }
-                failure { echo "CODE QUALITY GATE FAILED" }
-            }
+    steps {
+        echo "Running SonarQube analysis..."
+        withSonarQubeEnv('SonarQube') {
+            bat """
+                sonar-scanner ^
+                  -Dsonar.projectKey=flask-taskmanager ^
+                  -Dsonar.sources=app ^
+                  -Dsonar.tests=tests ^
+                  -Dsonar.python.coverage.reportPaths=coverage.xml ^
+                  -Dsonar.projectVersion=%IMAGE_TAG% ^
+                  -Dsonar.qualitygate.wait=true
+            """
         }
+    }
+    post {
+        success { echo "CODE QUALITY PASSED" }
+        failure { echo "CODE QUALITY GATE FAILED" }
+    }
+}
 
         stage('Security') {
             steps {
