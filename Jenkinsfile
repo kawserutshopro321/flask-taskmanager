@@ -158,31 +158,26 @@ pipeline {
         }
 
         stage('Monitoring') {
-            steps {
-                echo "============================================"
-                echo "STAGE 7: MONITORING"
-                echo "Starting Prometheus and Grafana..."
-                echo "============================================"
-                bat """
-                    docker-compose -f monitoring/docker-compose.monitoring.yml down --remove-orphans
-                    exit /b 0
-                """
-                bat "ping -n 5 127.0.0.1 > nul"
-                bat "docker-compose -f monitoring/docker-compose.monitoring.yml up -d"
-                echo "Waiting for monitoring stack to start..."
-                bat "ping -n 20 127.0.0.1 > nul"
-                bat "curl -f http://localhost:9090/-/healthy"
-                echo "============================================"
-                echo "Monitoring active!"
-                echo "Prometheus: http://localhost:9090"
-                echo "Grafana:    http://localhost:3001"
-                echo "============================================"
-            }
-            post {
-                success { echo "✅ MONITORING STAGE PASSED" }
-                failure { echo "❌ MONITORING STAGE FAILED" }
-            }
-        }
+    steps {
+        echo "============================================"
+        echo "STAGE 7: MONITORING"
+        echo "Starting Prometheus and Grafana..."
+        echo "============================================"
+        bat "docker-compose -f monitoring/docker-compose.monitoring.yml up -d"
+        echo "Waiting for monitoring stack to start..."
+        bat "ping -n 20 127.0.0.1 > nul"
+        bat "curl -f http://localhost:9090/-/healthy"
+        echo "============================================"
+        echo "Monitoring active!"
+        echo "Prometheus: http://localhost:9090"
+        echo "Grafana:    http://localhost:3001"
+        echo "============================================"
+    }
+    post {
+        success { echo "✅ MONITORING STAGE PASSED" }
+        failure { echo "❌ MONITORING STAGE FAILED" }
+    }
+}
     }
 
     post {
