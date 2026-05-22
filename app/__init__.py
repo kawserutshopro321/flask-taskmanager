@@ -23,8 +23,11 @@ def create_app(config_name='default'):
     def health():
         return {'status': 'healthy', 'version': '1.0'}, 200
 
+    # ✅ Real Prometheus metrics endpoint
     @app.route('/metrics')
     def metrics():
-        return {'requests': 100, 'errors': 0}, 200
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        from flask import Response
+        return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
 
     return app
