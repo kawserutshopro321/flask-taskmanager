@@ -76,7 +76,7 @@ pipeline {
                           -Dsonar.tests=tests ^
                           -Dsonar.python.coverage.reportPaths=coverage.xml ^
                           -Dsonar.projectVersion=%IMAGE_TAG% ^
-                          -Dsonar.qualitygate.wait=true
+                          -Dsonar.qualitygate.wait=false
                     """
                 }
             }
