@@ -160,14 +160,16 @@ pipeline {
         echo "STAGE 6: RELEASE - PRODUCTION"
         echo "Promoting application to production..."
         echo "============================================"
-        bat "docker ps -q --filter publish=5002 > temp.txt && set /p CID=<temp.txt && docker rm -f %CID% || true"
-        bat "docker-compose -f docker-compose.prod.yml down --remove-orphans || true"
+        bat """
+            docker-compose -f docker-compose.prod.yml down --remove-orphans
+            exit /b 0
+        """
         bat "ping -n 5 127.0.0.1 > nul"
         bat "docker-compose -f docker-compose.prod.yml up -d"
         echo "Waiting for production to start..."
         bat "ping -n 20 127.0.0.1 > nul"
         bat "curl -f http://localhost:5002/health"
-        echo "Production release successful"
+        echo "Production release v%IMAGE_TAG% successful"
     }
     post {
         success { echo "✅ PRODUCTION RELEASE PASSED" }
@@ -179,27 +181,31 @@ pipeline {
         // STAGE 7: MONITORING
         // ─────────────────────────────────────────
         stage('Monitoring') {
-            steps {
-                echo "============================================"
-                echo "STAGE 7: MONITORING"
-                echo "Starting Prometheus and Grafana..."
-                echo "============================================"
-                bat "docker-compose -f monitoring/docker-compose.monitoring.yml up -d"
-                echo "Waiting for monitoring stack to start..."
-                bat "ping -n 15 127.0.0.1 > nul"
-                bat "curl -f http://localhost:9090/-/healthy"
-                echo "============================================"
-                echo "Monitoring stack is active!"
-                echo "Prometheus: http://localhost:9090"
-                echo "Grafana:    http://localhost:3001"
-                echo "============================================"
-            }
-            post {
-                success { echo "✅ MONITORING STAGE PASSED" }
-                failure { echo "❌ MONITORING STAGE FAILED" }
-            }
-        }
+    steps {
+        echo "============================================"
+        echo "STAGE 7: MONITORING"
+        echo "Starting Prometheus and Grafana..."
+        echo "============================================"
+        bat """
+            docker-compose -f monitoring/docker-compose.monitoring.yml down --remove-orphans
+            exit /b 0
+        """
+        bat "ping -n 5 127.0.0.1 > nul"
+        bat "docker-compose -f monitoring/docker-compose.monitoring.yml up -d"
+        echo "Waiting for monitoring stack to start..."
+        bat "ping -n 20 127.0.0.1 > nul"
+        bat "curl -f http://localhost:9090/-/healthy"
+        echo "============================================"
+        echo "Monitoring active!"
+        echo "Prometheus: http://localhost:9090"
+        echo "Grafana:    http://localhost:3001"
+        echo "============================================"
     }
+    post {
+        success { echo "✅ MONITORING STAGE PASSED" }
+        failure { echo "❌ MONITORING STAGE FAILED" }
+    }
+}
 
     // ─────────────────────────────────────────
     // PIPELINE RESULT
