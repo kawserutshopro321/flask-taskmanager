@@ -1,0 +1,47 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Test & Coverage reports
+.coverage
+coverage.xml
+coverage_html/
+test-results/
+.pytest_cache/
+htmlcov/
+
+# SonarQube
+.sonar/
+.scannerwork/
+
+# Security reports
+bandit-report.json
+trivy-report.json
+trivy-summary.txt
+
+# Environment variables
+.env
+.env.local
+
+# VS Code
+.vscode/
+
+# Windows files
+Thumbs.db
+Desktop.ini
+
+# Docker
+*.log
