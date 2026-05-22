@@ -89,6 +89,9 @@ pipeline {
         // ─────────────────────────────────────────
         // STAGE 4: SECURITY
         // ─────────────────────────────────────────
+        // ─────────────────────────────────────────
+        // STAGE 4: SECURITY
+        // ─────────────────────────────────────────
         stage('Security') {
             steps {
                 echo "============================================"
@@ -99,19 +102,15 @@ pipeline {
                 echo "--- Running Bandit (Python SAST scan) ---"
                 bat """
                     docker run --rm ^
-                      -v %CD%:/src ^
+                      -v "%WORKSPACE%:/src" ^
                       python:3.11-slim ^
-                      sh -c "pip install bandit -q && ^
-                             bandit -r /src/app ^
-                               -f json ^
-                               -o /src/bandit-report.json ^
-                               --severity-level medium || true"
+                      sh -c "pip install bandit -q && bandit -r /src/app -f json -o /src/bandit-report.json --severity-level medium || true"
                 """
 
                 echo "--- Running Trivy (Docker image scan) ---"
                 bat """
                     docker run --rm ^
-                      -v //var/run/docker.sock:/var/run/docker.sock ^
+                      -v /var/run/docker.sock:/var/run/docker.sock ^
                       aquasec/trivy:latest image ^
                       --exit-code 0 ^
                       --severity HIGH,CRITICAL ^
